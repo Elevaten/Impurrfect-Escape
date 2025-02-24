@@ -5,20 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>UFO Survival Game</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; width: 100%; overflow: hidden; background: black; touch-action: none; display: flex; justify-content: center; align-items: center; }
-        canvas { display: block; }
-        #score { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 24px; font-family: Arial, sans-serif; }
+        /* 🌟 Default Mobile Background */
+body {
+    background-image: url('display.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 
-        @media (max-width: 600px) {
-            canvas { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
+/* 🌟 PC Version Background */
+@media (min-width: 601px) {
+    body {
+        background-image: url('pcdisplay.png');
+    }
+}
 
-        }
+/* 🔧 Reset Default Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 🎮 Full-Screen Setup */
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    touch-action: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 🎨 Game Canvas (Hidden Before Start) */
+canvas {
+    display: none;
+}
+
+/* 🎯 Score Display */
+#score {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 24px;
+    font-family: Arial, sans-serif;
+}
+
+/* 📱 Mobile Canvas Full-Screen */
+@media (max-width: 600px) {
+    canvas {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
+
+/* 🌸 Cute Start Button */
+#startButton { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    padding: 15px 30px; 
+    font-size: 22px; 
+    font-weight: bold;
+    color: white; 
+    background: linear-gradient(45deg, #ff66b2, #ffccff); 
+    border: none; 
+    border-radius: 25px; 
+    cursor: pointer; 
+    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.5);
+    transition: all 0.3s ease;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+/* ✨ Cute Hover Effect */
+#startButton:hover {
+    background: linear-gradient(45deg, #ff3399, #ff99ff); 
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.7);
+}
+
     </style>
 </head>
 <body>
     
     <div id="score">Score: 0</div>
+    <button id="startButton">Start Game</button>
+
     <canvas id="gameCanvas"></canvas>
 
     <audio id="catSound" src="cat.mp3"></audio>
@@ -26,16 +105,73 @@
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+        
+        const startButton = document.getElementById("startButton");
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let gameRunning = false; // The game is paused at start
+
+let music = new Audio("music.mp3");
+music.loop = true;
+
+function startGame() {
+    gameRunning = true;
+    ufo.alive = true;
+    lasers = [];
+    projectiles = [];
+    score = 0;
+    timeElapsed = 0;
+
+    music.play();
+    startButton.style.display = "none"; 
+    canvas.style.display = "block"; 
+
+    // 🖼 Remove the background image when the game starts
+    document.body.style.background = "black";
+
+    gameLoop();
+}
+
+
+
+// ✅ Attach click event to start the game
+startButton.addEventListener("click", startGame);
+
+// ✅ Stop the game from running before the button is clicked
+function gameLoop() {
+    if (!gameRunning) return; // Stops if game is not running
+    
+    if (ufo.alive) {
+        if (timeElapsed % 20 === 0) {
+            score++;
+        }
+        timeElapsed++;
+
+        if (timeElapsed % laserIncreaseRate === 0) {
+            spawnLaser();
+        }
+
+        updateUFO();
+        updateProjectiles();
+        updateLasers();
+        draw(); // Redraw everything
+
+        requestAnimationFrame(gameLoop); // Keep looping the game
+    }
+}
+
 
         function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
+
+startButton.addEventListener("click", startGame);
+
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
-
+        
         const isMobile = window.innerWidth < 600;
         let score = 0;
         let ufo = { 
@@ -259,20 +395,6 @@ projectiles.push({ x, y, speed: projectileSpeed });
             document.getElementById("score").textContent = `Score: ${score}`;
         }
 
-        function gameLoop() {
-            if (ufo.alive) {
-                if (timeElapsed % 20 === 0) { // Increases score every 10 frames
-            score++;
-        }
-                timeElapsed++;
-                if (timeElapsed % laserIncreaseRate === 0) { spawnLaser(); }
-                updateUFO();
-                updateProjectiles();
-                draw();
-                requestAnimationFrame(gameLoop);
-            }
-        }
-        gameLoop();
     </script>
 </body>
 </html>
