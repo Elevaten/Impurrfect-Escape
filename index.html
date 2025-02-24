@@ -172,11 +172,14 @@ projectiles.push({ x, y, speed: projectileSpeed });
             lasers.push(laser);
         }
 
-       function updateLasers() {
+        function updateLasers() {
     lasers.forEach((laser, index) => {
         if (laser.flickerTime > 0) {
             laser.flickerTime--;
         } else {
+            if (!laser.firing) {
+                playLaserSound(); // Play sound when laser starts firing
+            }
             laser.firing = true;
             if (laser.flickerTime <= -60) {
                 lasers.splice(index, 1);
@@ -184,9 +187,9 @@ projectiles.push({ x, y, speed: projectileSpeed });
             laser.flickerTime--;
         }
 
-        // **Check if the UFO collides with an active laser**
+        // Check collision after laser starts firing
         if (laser.firing && checkLaserCollision(laser)) {
-            gameOver();
+            gameOver(); // Kill player if hit
         }
     });
 }
@@ -201,10 +204,17 @@ projectiles.push({ x, y, speed: projectileSpeed });
             }, 100);
         }
         function checkLaserCollision(laser) {
-            let dist = Math.abs((laser.y2 - laser.y1) * ufo.x - (laser.x2 - laser.x1) * ufo.y + laser.x2 * laser.y1 - laser.y2 * laser.x1) /
-                       Math.hypot(laser.y2 - laser.y1, laser.x2 - laser.x1);
-            return dist < ufo.size / 3;
-        }
+    let ufoRadius = ufo.size * 0.3; // 30% of UFO size (smaller hitbox)
+    
+    let dist = Math.abs(
+        (laser.y2 - laser.y1) * ufo.x - (laser.x2 - laser.x1) * ufo.y + laser.x2 * laser.y1 - laser.y2 * laser.x1
+    ) / Math.hypot(laser.y2 - laser.y1, laser.x2 - laser.x1);
+
+    return dist < ufoRadius;
+}
+
+
+
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
