@@ -13,20 +13,6 @@
         @media (max-width: 600px) {
             canvas { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
 
-            #startButton {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px 20px;
-    font-size: 20px;
-    cursor: pointer;
-    background: white;
-    border: none;
-    border-radius: 5px;
-    z-index: 10; /* Ensures it's on top */
-}
-
         }
     </style>
 </head>
@@ -71,30 +57,6 @@ window.addEventListener("resize", resizeCanvas);
 
         
 const backgroundMusic = document.getElementById("backgroundMusic");
-
-        const startButton = document.getElementById("startButton");
-let gameRunning = false; // Game starts paused
-
-startButton.addEventListener("click", () => {
-    music.play();
-    startButton.style.display = "none"; // Hide button
-    canvas.style.display = "block"; // Show the game canvas
-    gameRunning = true; // Start the game
-    gameLoop(); // Begin game loop
-});
-
-function gameLoop() {
-    if (!gameRunning) return; // Pause game until start button is clicked
-
-    if (ufo.alive) {
-        score++;
-        if (score % 40 === 0) { spawnLaser(); }
-        draw();
-        requestAnimationFrame(gameLoop);
-    }
-}
-
-
         const laserSound = new Audio("laser.mp3");
 
 function playLaserSound() {
