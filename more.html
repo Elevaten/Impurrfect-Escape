@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>UFO Survival Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: black; touch-action: none; }
+        canvas { display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        #score { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 24px; font-family: Arial, sans-serif; }
+        @media (max-width: 768px) {
+            html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; }
+            canvas { width: 100vw; height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        function resizeCanvas() {
+            if (window.innerWidth <= 768) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            } else {
+                canvas.width = 800;
+                canvas.height = 600;
+            }
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+        
+        let score = 0;
+        let ufo = { x: canvas.width / 2, y: canvas.height / 2, size: 60, alive: true };
+        let projectile = null;
+        let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
+        
+        const bgImage = new Image();
+        bgImage.src = "background.png";
+        const ufoImage = new Image();
+        ufoImage.src = "ufo.png";
+        const projectileImage = new Image();
+        projectileImage.src = "weewoo.png";
+        
+        function spawnProjectile() {
+            if (!projectile) { 
+                let side = Math.floor(Math.random() * 4);
+                let x, y;
+                if (side === 0) { // Top
+                    x = Math.random() * canvas.width;
+                    y = 0;
+                } else if (side === 1) { // Right
+                    x = canvas.width;
+                    y = Math.random() * canvas.height;
+                } else if (side === 2) { // Bottom
+                    x = Math.random() * canvas.width;
+                    y = canvas.height;
+                } else { // Left
+                    x = 0;
+                    y = Math.random() * canvas.height;
+                }
+                projectile = { x, y, speed: 2 };
+            }
+        }
+        
+        function updateProjectile() {
+            if (projectile) {
+                let dx = ufo.x - projectile.x;
+                let dy = ufo.y - projectile.y;
+                let distance = Math.hypot(dx, dy);
+                if (distance > 1) {
+                    projectile.x += (dx / distance) * projectile.speed;
+                    projectile.y += (dy / distance) * projectile.speed;
+                }
+            }
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(ufoImage, ufo.x - ufo.size / 2, ufo.y - ufo.size / 2, ufo.size, ufo.size);
+            
+            if (projectile) {
+                ctx.drawImage(projectileImage, projectile.x - 20, projectile.y - 20, 40, 40);
+                ctx.font = "20px Comic Sans MS";
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center";
+                ctx.fillText("Galactic Purrrtection Unit", projectile.x, projectile.y - 25);
+            }
+        }
+        
+        function checkCollisions() {
+            if (projectile) {
+                let distance = Math.hypot(projectile.x - ufo.x, projectile.y - ufo.y);
+                if (distance < ufo.size / 2) {
+                    gameOver();
+                }
+            }
+        }
+        
+        function gameOver() {
+            ufo.alive = false;
+            setTimeout(() => {
+                alert("Game Over! Your Score: " + Math.floor(score));
+                document.location.reload();
+            }, 1000);
+        }
+        
+        setTimeout(spawnProjectile, 5000);
+        
+        function gameLoop() {
+            if (ufo.alive) {
+                updateProjectile();
+                checkCollisions();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        gameLoop();
+        
+    </script>
+</body>
+</html>
