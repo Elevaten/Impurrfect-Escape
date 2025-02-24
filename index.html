@@ -12,26 +12,28 @@
 
         @media (max-width: 600px) {
             canvas { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
+
+            #startButton {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    font-size: 20px;
+    cursor: pointer;
+    background: white;
+    border: none;
+    border-radius: 5px;
+    z-index: 10; /* Ensures it's on top */
+}
+
         }
     </style>
 </head>
 <body>
-
-    <div id="startScreen" style="
-    position: absolute; 
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex; justify-content: center; align-items: center; 
-    flex-direction: column;
-    color: white; font-size: 24px; text-align: center;">
-    <p>Press Start to Begin</p>
-    <button id="startButton" style="
-        padding: 10px 20px; font-size: 20px; 
-        background: orange; color: black; border: none;
-        cursor: pointer; border-radius: 5px;">Start Game</button>
-</div>
-
+    
     <div id="score">Score: 0</div>
+    <button id="startButton">Start Game</button>
     <canvas id="gameCanvas"></canvas>
 
     <audio id="catSound" src="cat.mp3"></audio>
@@ -67,16 +69,30 @@ window.addEventListener("resize", resizeCanvas);
         let minProjectileDistance = 50;
         let projectileSize = isMobile ? 50 : 130; // Smaller on mobile, larger on PC
 
-        const startScreen = document.getElementById("startScreen");
-const startButton = document.getElementById("startButton");
+        
 const backgroundMusic = document.getElementById("backgroundMusic");
 
-// Start game when button is clicked
+        const startButton = document.getElementById("startButton");
+let gameRunning = false; // Game starts paused
+
 startButton.addEventListener("click", () => {
-    startScreen.style.display = "none"; // Hide the start screen
-    backgroundMusic.play().catch(error => console.log("Playback error:", error)); // Play music
-    gameLoop(); // Start the game
+    music.play();
+    startButton.style.display = "none"; // Hide button
+    canvas.style.display = "block"; // Show the game canvas
+    gameRunning = true; // Start the game
+    gameLoop(); // Begin game loop
 });
+
+function gameLoop() {
+    if (!gameRunning) return; // Pause game until start button is clicked
+
+    if (ufo.alive) {
+        score++;
+        if (score % 40 === 0) { spawnLaser(); }
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+}
 
 
         const laserSound = new Audio("laser.mp3");
@@ -161,7 +177,9 @@ bgImage.src = window.innerWidth < 600 ? "background.png" : "backgroundpc.png";
                 }
             } while (!valid);
             playCatSound();
-            projectiles.push({ x, y, speed: 2 });
+            let projectileSpeed = window.innerWidth < 600 ? 1 : 2; 
+projectiles.push({ x, y, speed: projectileSpeed });
+
         }
         setInterval(spawnProjectile, projectileSpawnRate);
         function updateProjectiles() {
